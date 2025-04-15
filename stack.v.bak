@@ -1,0 +1,55 @@
+module Stack
+#(
+parameter	AddrWidth = 3,
+parameter	DEPTH = 1<<AddrWidth,
+parameter	WIDTH = 4
+)
+(
+input clk, 
+input RstN, 
+input [WIDTH-1:0] Data_In, 
+input Push, 
+input Pop, 
+output reg	[AddrWidth:0] SP,		//Stack Pointer
+output reg [WIDTH-1:0] Data_Out, 
+output reg Full, 
+output reg Empty
+);
+
+reg	[WIDTH-1:0]	Mem	[0:DEPTH-1];
+
+always @(posedge clk) begin
+	if(RstN) begin
+		Full <= 1'b0;
+		Empty <= 1'b1;
+		Data_Out <= 0;
+		Mem[0] <= 0;
+		SP <= 0;
+	end
+	else begin
+		if(Push && Pop) begin
+			if(!Empty) Data_Out <= Mem[SP-1];
+			Mem[SP-1] <= Data_In;
+		end
+		else begin
+			if(Push && !Full) begin
+				Mem[SP] <= Data_In;
+				SP <= SP + 1;
+				
+				if(SP == (DEPTH-1) ) Full <= 1;
+				Empty <= 1'b0;
+			end
+			if(Pop && !Empty) begin
+				Data_Out <= Mem[SP-1];
+				SP <= SP - 1;
+				
+				if(SP == 1) Empty <= 1'b1;
+				Full <= 1'b0;
+			end
+		end
+	end
+end
+
+endmodule
+
+
